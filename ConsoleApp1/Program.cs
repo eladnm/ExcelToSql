@@ -31,13 +31,21 @@ namespace ConsoleApp1
                     {
 
 
-                        SqlConnection conn = new SqlConnection(@"Data Source=ELAD\SQLEXPRESS;Initial Catalog=elad;Integrated Security=True;");
-                        SqlCommand cmd = new SqlCommand("create table #MyTempTable(SomeColumn varchar(50))", conn);
+                        SqlConnection conn = new SqlConnection(@"Data Source=ELAD\SQLEXPRESS;Initial Catalog=elad;Integrated Security=True;MultipleActiveResultSets = True;");
+                        SqlCommand cmd = new SqlCommand("create table ##MyTable(Name varchar(50))", conn);
+                        SqlCommand cmd2 = new SqlCommand("select * from tempdb.dbo.##MyTable join elad.dbo.employees on elad.dbo.employees.first_name=tempdb.dbo.##MyTable.Name", conn);
                         conn.Open();
                         cmd.ExecuteNonQuery();
                         SqlBulkCopy bulkCopy = new SqlBulkCopy(conn);
-                        bulkCopy.DestinationTableName = "#MyTempTable";
+                        bulkCopy.DestinationTableName = "##MyTable";
                         bulkCopy.WriteToServer(dReader);
+                        //conn.Close();
+                        //conn.Open();
+                        SqlDataReader dr2 =cmd2.ExecuteReader();
+                        while (dr2.Read())
+                        {
+                            Console.WriteLine(String.Format("{0}", dr2[0]));
+                        }
                         conn.Close();
                     }
                 }
